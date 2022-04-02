@@ -2,9 +2,105 @@
 from freqtrade.strategy.interface import IStrategy
 from pandas import DataFrame
 # --------------------------------
-
+import numpy as np
 from functools import reduce
-from tapy import Indicators
+# from tapy import Indicators
+
+class Indicators:
+    """
+    **Blatantly copied from tapy indicator framework**
+    Add technical indicators data to a pandas data frame
+    """
+
+    def __init__(
+        self,
+        df,
+        open_col="Open",
+        high_col="High",
+        low_col="Low",
+        close_col="Close",
+        volume_col="Volume",
+    ):
+        """
+        Initiate Indicators object
+        :param pandas data frame df: Should contain OHLC columns and Volume column
+        :param str open_col: Name of Open column in df
+        :param str high_col: Name of High column in df
+        :param str low_col: Name of Low column in df
+        :param str close_col: Name of Close column in df
+        :param str volume_col: Name of Volume column in df. This column is optional
+            and require only if indicator use this data.
+        """
+        self.df = df
+        self._columns = {
+            "Open": open_col,
+            "High": high_col,
+            "Low": low_col,
+            "Close": close_col,
+            "Volume": volume_col,
+        }
+
+    def alligator(
+        self,
+        period_jaws=13,
+        period_teeth=8,
+        period_lips=5,
+        shift_jaws=8,
+        shift_teeth=5,
+        shift_lips=3,
+        column_name_jaws="alligator_jaws",
+        column_name_teeth="alligator_teeth",
+        column_name_lips="alligator_lips",
+    ):
+        """
+        Alligator
+        ------------------
+            https://www.metatrader4.com/en/trading-platform/help/analytics/tech_indicators/alligator
+            >>> Indicators.alligator(period_jaws=13, period_teeth=8, period_lips=5, shift_jaws=8, shift_teeth=5, shift_lips=3, column_name_jaws='alligator_jaw', column_name_teeth='alligator_teeth', column_name_lips='alligator_lips')
+            :param int period_jaws: Period for Alligator' Jaws, default: 13
+            :param int period_teeth: Period for Alligator' Teeth, default: 8
+            :param int period_lips: Period for Alligator' Lips, default: 5
+            :param int shift_jaws: Period for Alligator' Jaws, default: 8
+            :param int shift_teeth: Period for Alligator' Teeth, default: 5
+            :param int shift_lips: Period for Alligator' Lips, default: 3
+            :param str column_name_jaws: Column Name for Alligator' Jaws, default: alligator_jaws
+            :param str column_name_teeth: Column Name for Alligator' Teeth, default: alligator_teeth
+            :param str column_name_lips: Column Name for Alligator' Lips, default: alligator_lips
+            :return: None
+        """
+        df_median = self.df[[self._columns["High"], self._columns["Low"]]]
+        median_col = "median_col"
+        df_median = df_median.assign(
+            median_col=lambda x: (x[self._columns["High"]] + x[self._columns["Low"]])
+            / 2
+        )
+        df_j = self.calculate_smma(df_median, period_jaws, column_name_jaws, median_col)
+        df_t = self.calculate_smma(df_median, period_teeth, column_name_teeth, median_col)
+        df_l = self.calculate_smma(df_median, period_lips, column_name_lips, median_col)
+
+        # Shift SMMAs
+        df_j[column_name_jaws] = df_j[column_name_jaws].shift(shift_jaws)
+        df_t[column_name_teeth] = df_t[column_name_teeth].shift(shift_teeth)
+        df_l[column_name_lips] = df_l[column_name_lips].shift(shift_lips)
+
+        self.df = self.df.merge(df_j, left_index=True, right_index=True)
+        self.df = self.df.merge(df_t, left_index=True, right_index=True)
+        self.df = self.df.merge(df_l, left_index=True, right_index=True)
+
+    def calculate_smma(self, df, period, column_name, apply_to):
+        """Calculate Smoothed Moving Average."""
+        df_tmp = df[[apply_to]]
+        first_val = df_tmp[apply_to].iloc[:period].mean()
+        df_tmp = df_tmp.assign(column_name=None)
+        df_tmp.at[period, column_name] = first_val
+        for index, row in df_tmp.iterrows():
+            if index > period:
+                smma_val = (df_tmp.at[index - 1, column_name] *
+                            (period - 1) + row[apply_to]) / period
+                df_tmp.at[index, column_name] = smma_val
+        df_tmp = df_tmp[[column_name]]
+        return df_tmp
+
 
 class SeeYouLater(IStrategy):
     """
