@@ -26,7 +26,7 @@ I got inspired by the Alligator Indicator and Fractals signals described by trad
 It does fairly well with volatile pairs, so you are adviced to use a static pair list with most volatile pairs. 
 Mentioned is that the Alligator doesn't like sideways moving markets. (*it needs some peaks to bite in I guess*) 
 
-See the tools in my `freqtrade-cyber-bots` repo for a way to change the pairs reguarly.
+See the tools in my `freqtrade-cyber-bots` repo for a way to change the pairs regularly.
 
 Only tested overnight with USDT pairs. 
 
