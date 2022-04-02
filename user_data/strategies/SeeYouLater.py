@@ -3,14 +3,12 @@ from freqtrade.strategy.interface import IStrategy
 from pandas import DataFrame
 # --------------------------------
 
-import talib.abstract as ta
 from functools import reduce
-from pandas import DataFrame
 from tapy import Indicators
 
 class SeeYouLater(IStrategy):
     """
-        My first humble strategy using Williams Alligator and Fractals
+        My first humble strategy using Williams Alligator Indicator and Fractals
         Changelog:
             0.9 Inital version, some improvements needed.
 
@@ -60,10 +58,10 @@ class SeeYouLater(IStrategy):
             'subplots': {
                 # Subplots - each dict defines one additional plot
                 "sell": {
-                    'buy_fractal': {'color': 'blue'},
+                    'bullish': {'color': 'orange'},
                 },
                 "buy": {
-                    'sell_fractal': {'color': 'orange'},
+                    'bearish': {'color': 'lightgreen'},
                 }
             }
         }
@@ -81,55 +79,45 @@ class SeeYouLater(IStrategy):
         :return: a Dataframe with all mandatory indicators for the strategies
         """
 
-        # Init Tapy, install with pip install tapy
+        # Initialize the tapy indicators, install with 'pip3 install tapy'
         # https://pandastechindicators.readthedocs.io/en/latest/#
-        indicators = Indicators(dataframe,open_col='open',high_col='high',low_col='low',close_col='close',volume_col='volume')
+        indicators = Indicators(dataframe,open_col='open', high_col='high', low_col='low', close_col='close', volume_col='volume')
 
         # Alligator
-        indicators.alligator(column_name_jaws='jaw',column_name_teeth='teeth', column_name_lips='lips')
+        indicators.alligator(column_name_jaws='jaw', column_name_teeth='teeth', column_name_lips='lips')
         dataframe['lips'] = indicators.df['lips']
         dataframe['jaw'] = indicators.df['jaw']
         dataframe['teeth'] = indicators.df['teeth']
 
         # Fractals
-        # indicators.fractals(column_name_high='bear', column_name_low='bull')
-        # dataframe['2bear'] = indicators.df['bear']
-        # dataframe['2bull'] = indicators.df['bull']
-
-        dataframe['sell_fractal'] = (
+        dataframe['bearish'] = (
                         dataframe['high'].shift(4).lt(dataframe['high'].shift(2)) &
                         dataframe['high'].shift(3).lt(dataframe['high'].shift(2)) &
                         dataframe['high'].shift(1).lt(dataframe['high'].shift(2)) &
                         dataframe['high'].lt(dataframe['high'].shift(2))
                 )
 
-        dataframe['buy_fractal'] = (
+        dataframe['bullish'] = (
                 dataframe['low'].shift(4).gt(dataframe['low'].shift(2)) &
                 dataframe['low'].shift(3).gt(dataframe['low'].shift(2)) &
                 dataframe['low'].shift(1).gt(dataframe['low'].shift(2)) &
                 dataframe['low'].gt(dataframe['high'].shift(2))
         )
 
-        # # Williams %R
-        # wperiod = 14
-        # highest_high = dataframe["high"].rolling(wperiod).max()
-        # lowest_low = dataframe["low"].rolling(wperiod).min()
-        # dataframe['wr'] = (highest_high - dataframe["close"]) / (highest_high - lowest_low) * -100
-
         return dataframe
+
 
     def populate_buy_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
         Based on TA indicators, populates the buy signal for the given dataframe
-        If the bullish fractal is active and below the teeth of the gator do a buy
+        If the bullish fractal is active and below the teeth of the gator -> buy
         :param dataframe: DataFrame
         :return: DataFrame with buy column
         """
         conditions = []
         conditions.append(
             (
-                (dataframe['sell_fractal']) &
-                # (dataframe['2bear']) &
+                (dataframe['bearish']) &
                 (dataframe['close'] < dataframe['teeth'] ) &
                 (dataframe['volume'] > 0)
             )
@@ -146,15 +134,14 @@ class SeeYouLater(IStrategy):
     def populate_sell_trend(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
         Based on TA indicators, populates the sell signal for the given dataframe
-        If the bearish fractal is active and above the teeth of the gator do a sell
+        If the bearish fractal is active and above the teeth of the gator -> sell
         :param dataframe: DataFrame
         :return: DataFrame with buy column
         """
         conditions = []
         conditions.append(
             (
-                (dataframe['buy_fractal']) &
-                # (dataframe['2bull']) &
+                (dataframe['bullish']) &
                 (dataframe['close'] > dataframe['teeth'] ) &
                 (dataframe['volume'] > 0)
             )
