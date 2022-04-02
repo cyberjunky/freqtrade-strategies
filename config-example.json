@@ -138,9 +138,7 @@
         "verbosity": "error",
         "enable_openapi": false,
         "jwt_secret_key": "",
-        "CORS_origins": [
-            "http://192.168.2.127:8080"
-        ],
+        "CORS_origins": [],
         "username": "user",
         "password": "password"
     },
