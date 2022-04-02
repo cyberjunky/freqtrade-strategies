@@ -32,13 +32,9 @@ Only tested overnight with USDT pairs.
 
 ## Usage
 
-Copy the strategy to your strategy folder, check the contents, and install the tapy package.
+Copy the strategy to your strategy folder, check the contents.
 For now it was the only indicatior set which gave reasoable Alligator and Fractal data.
 May change later.
-
-```
-pip3 install tapy
-```
 
 I also included a built-in graph which you can load using the 'From Strategy' button.
 
