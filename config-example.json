@@ -1,0 +1,156 @@
+{
+    "max_open_trades": 6,
+    "stake_currency": "USDT",
+    "stake_amount": 100,
+    "tradable_balance_ratio": 0.98,
+    "fiat_display_currency": "USD",
+    "dry_run": true,
+    "dry_run_wallet": 1000,
+    "cancel_open_orders_on_exit": false,
+    "unfilledtimeout": {
+        "buy": 10,
+        "sell": 30,
+        "exit_timeout_count": 0,
+        "unit": "minutes"
+    },
+    "order_types": {
+        "buy": "limit",
+        "sell": "limit",
+        "emergencysell": "market",
+        "trailing_stop_loss": "market",
+        "stoploss": "market",
+        "stoploss_on_exchange": false,
+        "stoploss_on_exchange_interval": 3
+    },
+    "bid_strategy": {
+        "ask_last_balance": 0.0,
+        "use_order_book": true,
+        "order_book_top": 1,
+        "check_depth_of_market": {
+            "enabled": false,
+            "bids_to_ask_delta": 1
+        }
+    },
+    "ask_strategy": {
+        "use_order_book": true,
+        "order_book_top": 1
+    },
+    "exchange": {
+        "name": "binance",
+        "key": "",
+        "secret": "",
+        "ccxt_config": {
+            "enableRateLimit": true
+        },
+        "ccxt_async_config": {
+            "enableRateLimit": true,
+            "rateLimit": 200
+        },
+        "pair_whitelist": [
+            "VOXEL/USDT",
+            "BSW/USDT",
+            "GLMR/USDT",
+            "LOKA/USDT",
+            "CHR/USDT",
+            "ASTR/USDT",
+            "FXS/USDT",
+            "XVS/USDT",
+            "ALPHA/USDT",
+            "MFT/USDT",
+            "TKO/USDT",
+            "PYR/USDT",
+            "MOVR/USDT",
+            "LIT/USDT",
+            "DAR/USDT",
+            "RARE/USDT",
+            "DENT/USDT",
+            "ACA/USDT",
+            "QI/USDT",
+            "STMX/USDT",
+            "MBOX/USDT",
+            "AXS/USDT",
+            "GMT/USDT",
+            "GRT/USDT",
+            "BAKE/USDT",
+            "SKL/USDT",
+            "DUSK/USDT",
+            "IMX/USDT",
+            "NEAR/USDT",
+            "QTUM/USDT",
+            "CVX/USDT",
+            "SC/USDT",
+            "BNX/USDT",
+            "BETA/USDT",
+            "BEL/USDT",
+            "DGB/USDT",
+            "ENS/USDT",
+            "1INCH/USDT",
+            "HIGH/USDT",
+            "AKRO/USDT",
+            "YGG/USDT",
+            "POWR/USDT",
+            "RAD/USDT",
+            "PUNDIX/USDT",
+            "ONE/USDT",
+            "BEAM/USDT",
+            "MDX/USDT",
+            "DYDX/USDT",
+            "XEC/USDT"
+        ],
+        "pair_blacklist": [
+            "(BNB)/.*",
+            "(BTC|ETH)/.*",
+            ".*(_PREMIUM|BEAR|BULL|DOWN|HALF|HEDGE|UP|[1235][SL])/.*",
+            "(AUD|BRZ|CAD|CHF|EUR|GBP|HKD|IDRT|JPY|NGN|RUB|SGD|TRY|UAH|USD|ZAR)/.*",
+            "(BUSD|CUSDT|DAI|PAXG|SUSD|TUSD|USDC|USDP|USDT|UST|VAI)/.*",
+            "(ACM|AFA|ALA|ALL|APL|ASR|ATM|BAR|CAI|CITY|FOR|GAL|GOZ|IBFK|JUV|LAZIO|LEG|LOCK-1|NAVI|NMR|NOV|OG|PFL|PORTO|PSG|ROUSH|SANTOS|STV|TH|TRA|UCH|UFC|YBO)/.*",
+            "(BOBA|CTXC|HBAR|NMR|SLP|OMG|ONG|ARDR)/.*"
+        ]
+    },
+    "pairlists": [
+        {
+            "method": "StaticPairList"
+        }
+    ],
+    "edge": {
+        "enabled": false,
+        "process_throttle_secs": 3600,
+        "calculate_since_number_of_days": 2,
+        "allowed_risk": 0.01,
+        "stoploss_range_min": -0.01,
+        "stoploss_range_max": -0.1,
+        "stoploss_range_step": -0.01,
+        "minimum_winrate": 0.6,
+        "minimum_expectancy": 0.2,
+        "min_trade_number": 10,
+        "max_trade_duration_minute": 1440,
+        "remove_pumps": false
+    },
+    "telegram": {
+        "enabled": false,
+        "token": "",
+        "chat_id": ""
+    },
+    "api_server": {
+        "enabled": false,
+        "listen_ip_address": "0.0.0.0",
+        "listen_port": 8080,
+        "verbosity": "error",
+        "enable_openapi": false,
+        "jwt_secret_key": "",
+        "CORS_origins": [
+            "http://192.168.2.127:8080"
+        ],
+        "username": "user",
+        "password": "password"
+    },
+    "bot_name": "SeeYouLater Bot",
+    "strategy": "SeeYouLater",
+    "user_data_dir": "/home/ron/freqtrade/user_data/",
+    "db_url": "sqlite:////home/ron/freqtrade/tradesv3-syl-usdt.dryrun.sqlite",
+    "initial_state": "running",
+    "forcebuy_enable": true,
+    "internals": {
+        "process_throttle_secs": 5
+    }
+}
