@@ -4,6 +4,10 @@ from pandas import DataFrame
 # --------------------------------
 import numpy as np
 from functools import reduce
+from freqtrade.strategy import stoploss_from_open
+from freqtrade.strategy.hyper import DecimalParameter
+from freqtrade.persistence import Trade
+from datetime import datetime
 
 def alligator(
     
@@ -56,19 +60,20 @@ def calculate_smma(df, period, column_name, apply_to):
     return df_tmp
 
 
-class SeeYouLater(IStrategy):
+class SeeYouLaterTSL(IStrategy):
     """
         My first humble strategy using Williams Alligator Indicator and Fractals
         Changelog:
             0.9 Inital version, some improvements needed
             1.0 Code optimizations
+            1.1 Added custom stoplosse
 
         https://github.com/cyberjunky/freqtrade-strategies
     """
 
     # Optimal stoploss designed for the strategy.
     # This attribute will be overridden if the config file contains "stoploss".
-    stoploss = -0.2
+    stoploss = -0.99
 
     # Trailing stoploss
     trailing_stop = False
@@ -80,6 +85,9 @@ class SeeYouLater(IStrategy):
     use_sell_signal = True
     sell_profit_only = True
     ignore_roi_if_buy_signal = False
+
+    # Custom stoploss
+    use_custom_stoploss = True
 
     # Number of candles the strategy requires before producing valid signals
     startup_candle_count: int = 30
@@ -117,7 +125,46 @@ class SeeYouLater(IStrategy):
             }
         }
 
-    
+    # hard stoploss profit
+    pHSL = DecimalParameter(-0.500, -0.040, default=-0.99, decimals=3, space='sell', load=True)
+
+    # profit threshold 1, trigger point, SL_1 is used
+    pPF_1 = DecimalParameter(0.008, 0.020, default=0.011, decimals=3, space='sell', load=True)
+    pSL_1 = DecimalParameter(0.008, 0.020, default=0.009, decimals=3, space='sell', load=True)
+
+    # profit threshold 2, SL_2 is used
+    pPF_2 = DecimalParameter(0.040, 0.100, default=0.040, decimals=3, space='sell', load=True)
+    pSL_2 = DecimalParameter(0.020, 0.070, default=0.020, decimals=3, space='sell', load=True)
+
+    # Custom stoploss
+    def custom_stoploss(self, pair: str, trade: 'Trade', current_time: datetime,
+                        current_rate: float, current_profit: float, **kwargs) -> float:
+
+        # hard stoploss profit
+        HSL = self.pHSL.value
+        PF_1 = self.pPF_1.value
+        SL_1 = self.pSL_1.value
+        PF_2 = self.pPF_2.value
+        SL_2 = self.pSL_2.value
+
+        # For profits between PF_1 and PF_2 the stoploss (sl_profit) used is linearly interpolated
+        # between the values of SL_1 and SL_2. For all profits above PL_2 the sl_profit value
+        # rises linearly with current profit, for profits below PF_1 the hard stoploss profit is used.
+
+        if current_profit > PF_2:
+            sl_profit = SL_2 + (current_profit - PF_2)
+        elif current_profit > PF_1:
+            sl_profit = SL_1 + ((current_profit - PF_1) * (SL_2 - SL_1) / (PF_2 - PF_1))
+        else:
+            sl_profit = HSL
+
+        # Only for hyperopt invalid return
+        if sl_profit >= current_profit:
+            return -0.99
+
+        return stoploss_from_open(sl_profit, current_profit)
+
+
     def populate_indicators(self, dataframe: DataFrame, metadata: dict) -> DataFrame:
         """
         Adds several different TA indicators to the given DataFrame
